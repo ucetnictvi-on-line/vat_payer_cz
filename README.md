@@ -6,20 +6,33 @@ This is Ruby wrapper for [web service for "searching information about reliabili
 
 ## Usage
 The web service has the following three end-points:
-- standard VAT payer info
-- extended VAT payer info
-- list of unreliable VAT payers
+- [standard VAT payer info](#standard)
+- [extended VAT payer info](#extended)
+- list of unreliable VAT payers (not implemented)
 
-This gem currently implements 'standard VAT payer info'.
+This gem currently implements **standard VAT payer info** and **extended VAT payer info**.
 
-# Standard VAT payer info
+## <a name="standard">Standard VAT payer info</a>
 ```ruby
 require 'vat_info'
 
 vat_ids = %w(CZ27169278 CZ26168685)
 VatInfo.unreliable_payer(*vat_ids)
 ```
-You should see something like this:
+## <a name="extended">Extended VAT payer info</a>
+Compared to Standard VAT payer info, the response is enriched by other VAT payer data, such as name and address.
+The library normalizes some of the VAT payer attributes which are supplied in capitals (company name and address attributes).
+```ruby
+require 'vat_info'
+
+vat_ids = %w(CZ27169278 CZ26168685)
+VatInfo.unreliable_payer_extended(*vat_ids)
+```
+
+## Response
+Object `VatInfo::Response`
+
+#### Example
 ```shell
 => #<VatInfo::Response:0x0000000001ff61e8
  @body=
@@ -35,24 +48,26 @@ You should see something like this:
         {:predcisli=>nil, :cislo=>"2400915487", :kod_banky=>"2010", :iban=>nil, :datum_zverejneni=>"2016-05-05"}]},
 ...
 ```
-## Response
-Object `VatInfo::Response`
-### status_code
+### .status_code
 `VatInfo::Response.status_code => String`
 200 - OK: Valid response was received.
 408 - Request Timeout: the web service timed out.
 503 - Service Unavailable: there was another error fetching the response.
 
-### body
+### .body
 Empty attributes have `nil` value.
 
 `VatInfo::Response.body => Hash`
 ```ruby
 {
   status: { Status }
-  platci: [ { Payer }, .. ]
+  platci: [ { Payer | PayerExtended }, .. ]
 }
 ```
+
+### .raw
+Raw data returned by the web service.
+
 #### Status
 See official docs for explanation.
 ```ruby
@@ -70,6 +85,24 @@ See official docs for explanation.
   dic: String,
   cislo_fu: String,
   ucty: [ { Account }, .. ]
+}
+```
+#### PayerExtended
+```ruby
+{
+  nespolehlivy_platce: String, # "ANO" | "NE" | "NENALEZEN"
+  datum_zverejneni: String, # ISO 8601 Date
+  dic: String,
+  cislo_fu: String,
+  ucty: [ { Account }, .. ]
+  
+  #Extended info
+  nazev_subjektu: String,
+  ulice_cislo: String,
+  cast_obce: String,
+  mesto: String,
+  psc: String,
+  stat: String
 }
 ```
 #### Account

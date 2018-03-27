@@ -1,5 +1,6 @@
 require 'nokogiri'
 require 'vat_info/request/unreliable_payer'
+require 'vat_info/request/unreliable_payer_extended'
 
 module VatInfo
   class Request
